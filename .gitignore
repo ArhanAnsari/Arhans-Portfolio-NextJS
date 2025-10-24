@@ -1,0 +1,5 @@
+# See https://nextjs.org/docs/advanced-features/output-file-tracing for more information.
+.next/
+node_modules/
+.env.local
+.env.*.local
