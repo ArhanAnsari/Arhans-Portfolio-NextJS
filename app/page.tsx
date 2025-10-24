@@ -1,17 +1,23 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import dynamic from "next/dynamic";
 import { MotionConfig } from "framer-motion";
 import { Leva } from "leva";
 import { Suspense, useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { Cursor } from "./components/Cursor";
-import { Experience } from "./components/Experience";
-import { Interface } from "./components/Interface";
+const DynamicInterface = dynamic(
+  () => import("./components/Interface").then((mod) => mod.Interface),
+  { ssr: false }
+);
 import { LoadingScreen } from "./components/LoadingScreen";
 import { Menu } from "./components/Menu";
 import { ParticleBackground } from "./components/ParticleBackground";
 import { framerMotionConfig } from "@/lib/config";
+
+const DynamicThreeScene = dynamic(() => import("./components/ThreeScene"), {
+  ssr: false,
+});
 
 export default function Home() {
   const [section, setSection] = useState(0);
@@ -50,32 +56,12 @@ export default function Home() {
         }}
       >
         {/* Fixed Canvas for 3D Scene - Behind Everything */}
-        <div className="fixed top-0 left-0 w-screen h-screen z-0 pointer-events-none">
-          <Canvas
-            shadows
-            camera={{ position: [0, 3, 10], fov: 42 }}
-            gl={{
-              antialias: true,
-              alpha: true,
-              powerPreference: "high-performance",
-            }}
-            style={{ display: "block", width: "100%", height: "100%" }}
-          >
-            <color attach="background" args={["#0f172a"]} />
-            <fog attach="fog" args={["#0f172a", 20, 50]} />
-
-            <Suspense fallback={null}>
-              {started && (
-                <Experience section={section} menuOpened={menuOpened} />
-              )}
-            </Suspense>
-          </Canvas>
-        </div>
+        <DynamicThreeScene started={started} section={section} menuOpened={menuOpened} />
 
         {/* Scrollable Content - On Top with transparency */}
         {started && (
           <div className="relative z-10 w-full pointer-events-auto">
-            <Interface setSection={setSection} />
+            <DynamicInterface setSection={setSection} />
           </div>
         )}
 

@@ -1,36 +1,41 @@
 "use client";
 
-import { useProgress } from "@react-three/drei";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const LoadingScreen = (props) => {
   const { started, setStarted } = props;
-  const { progress, total, loaded, item } = useProgress();
+  // Local simulated progress to avoid importing useProgress from drei
   const [displayProgress, setDisplayProgress] = useState(0);
+  const progressRef = useRef(0);
 
   useEffect(() => {
-    // Smooth progress animation
-    const timer = setTimeout(() => {
-      setDisplayProgress(progress);
-    }, 100);
+    // Simulate progress smoothly; stop when started becomes true
+    let raf = null;
+    const step = () => {
+      // Increase speed a bit when low, slow when high
+      const delta = (100 - progressRef.current) * 0.02 + 0.3;
+      progressRef.current = Math.min(100, progressRef.current + delta);
+      setDisplayProgress(Math.round(progressRef.current));
+      if (!started && progressRef.current < 99) {
+        raf = requestAnimationFrame(step);
+      }
+    };
 
-    if (progress === 100) {
-      setTimeout(() => {
-        setStarted(true);
-      }, 800);
-    }
+    raf = requestAnimationFrame(step);
 
-    return () => clearTimeout(timer);
-  }, [progress, total, loaded, item, setStarted]);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [started]);
 
-  // Fallback for when progress doesn't update
+  // Fallback to ensure it starts eventually
   useEffect(() => {
     const fallbackTimer = setTimeout(() => {
       if (!started) {
         setStarted(true);
       }
-    }, 3000); // Start after 3 seconds regardless
+    }, 4000);
 
     return () => clearTimeout(fallbackTimer);
   }, [started, setStarted]);
@@ -121,18 +126,7 @@ export const LoadingScreen = (props) => {
               </div>
             </div>
 
-            {/* Loading Items */}
-            {item && (
-              <motion.div
-                className="text-sm text-neutral-500 text-center max-w-md truncate px-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                key={item}
-              >
-                Loading: {item.split('/').pop()}
-              </motion.div>
-            )}
+            {/* Loading Items: not available without useProgress; showing progress only */}
 
             {/* Spinning Loader */}
             <motion.div
