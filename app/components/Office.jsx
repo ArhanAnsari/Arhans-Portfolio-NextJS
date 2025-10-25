@@ -19,7 +19,8 @@ export function Office(props) {
   const textureVSCode = useVideoTexture("textures/vscode.mp4");
 
   texture.flipY = false;
-  texture.encoding = THREE.sRGBEncoding;
+  // In Three.js r128+, sRGBEncoding is replaced with SRGBColorSpace
+  texture.colorSpace = THREE.SRGBColorSpace;
 
   const textureMaterial = new THREE.MeshStandardMaterial({
     map: texture,
